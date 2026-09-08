@@ -1,0 +1,32 @@
+{
+  "name": "The Tetris King",
+  "short_name": "Tetris King",
+  "description": "A modern arcade Tetris with 20 unlockable levels, bomb sound effects, fireworks, and a female voice shouting AMAZING after big clears.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0d11",
+  "theme_color": "#0c0d11",
+  "lang": "en",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
