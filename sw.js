@@ -1,4 +1,4 @@
-const VERSION = 'tetris-king-v2';
+const VERSION = 'tetris-king-v3';
 const CACHE = 'tk-' + VERSION;
 
 const SHELL = [
