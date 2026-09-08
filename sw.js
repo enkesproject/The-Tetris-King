@@ -1,7 +1,4 @@
-/* The Tetris King — Service Worker (GitHub Pages / PWA)
-   Cache-first: app shell + ikon + font + audio Cloudinary.
-   Ganti CACHE_NAME setiap update agar client memuat versi baru. */
-const VERSION = 'tetris-king-v1';
+const VERSION = 'tetris-king-v2';
 const CACHE = 'tk-' + VERSION;
 
 const SHELL = [
