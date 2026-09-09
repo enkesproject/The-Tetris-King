@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <meta name="theme-color" content="#0c0d11"/>
-<title>The Tetris King</title>
-<meta name="description" content="The Tetris King — a modern arcade Tetris with 20 unlockable levels, bomb SFX, fireworks and smoke effects."/>
+<title>Puzzle King</title>
+<meta name="description" content="Puzzle King — a modern arcade block puzzle with 20 unlockable levels, bomb SFX, voice reactions, fireworks and smoke effects."/>
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icons/icon-192.png"/>
 <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
@@ -236,7 +236,7 @@ kbd{display:inline-block; border:1px solid var(--line2); padding:2px 6px; font-s
 
 <div id="errBox"></div>
 
-<div class="side l" aria-hidden="true">TETRIS</div>
+<div class="side l" aria-hidden="true">PUZZLE</div>
 <div class="side r" aria-hidden="true">KING</div>
 
 <div class="stage">
@@ -246,7 +246,7 @@ kbd{display:inline-block; border:1px solid var(--line2); padding:2px 6px; font-s
       <svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M2.5 8.2 6.6 12l4.3-6.6c.5-.8 1.7-.8 2.2 0L17.4 12l4.1-3.8c.7-.6 1.8 0 1.6.9l-2.1 8.1c-.1.5-.6.9-1.1.9H5.1c-.5 0-1-.4-1.1-.9L1.9 9.1c-.2-.9.9-1.5 1.6-.9z"/>
       </svg>
-      <span class="brand-word">TETRIS KING</span>
+      <span class="brand-word">PUZZLE KING</span>
       <span class="chips">
         <b style="background:#22d3e0"></b><b style="background:#ffc400"></b><b style="background:#b45de0"></b>
         <b style="background:#6fd44a"></b><b style="background:#ff4757"></b><b style="background:#4f7dff"></b>
@@ -301,11 +301,11 @@ kbd{display:inline-block; border:1px solid var(--line2); padding:2px 6px; font-s
           <path d="M2.5 8.2 6.6 12l4.3-6.6c.5-.8 1.7-.8 2.2 0L17.4 12l4.1-3.8c.7-.6 1.8 0 1.6.9l-2.1 8.1c-.1.5-.6.9-1.1.9H5.1c-.5 0-1-.4-1.1-.9L1.9 9.1c-.2-.9.9-1.5 1.6-.9z"/>
         </svg>
         <div class="logo">
-          <span style="--i:0;color:#22d3e0">T</span><span style="--i:1;color:#ffc400">E</span>
-          <span style="--i:2;color:#b45de0">T</span><span style="--i:3;color:#6fd44a">R</span>
-          <span style="--i:4;color:#ff4757">I</span><span style="--i:5;color:#4f7dff">S</span>
+          <span style="--i:0;color:#22d3e0">P</span><span style="--i:1;color:#ffc400">U</span>
+          <span style="--i:2;color:#b45de0">Z</span><span style="--i:3;color:#6fd44a">Z</span>
+          <span style="--i:4;color:#ff4757">L</span><span style="--i:5;color:#4f7dff">E</span>
         </div>
-        <div class="tagline">THE TETRIS KING · PUZZLE ARCADE</div>
+        <div class="tagline">PUZZLE KING · ARCADE</div>
         <button class="btn" id="btnStart">PLAY</button>
         <div class="hintline">or press <kbd>ENTER</kbd></div>
         <div class="hintline touch-hint">tap PLAY — choose your level</div>
@@ -636,8 +636,14 @@ const A={
   }
 };
 
-/* ══════════ FEMALE VOICE "AMAZING!" (0.8s AFTER the explosion) ══════════ */
-function sayAmazing(delayMs=800){
+/* ══════════ VOICE REACTIONS (Cloudinary) ══════════
+   amazing  → 2+ lines cleared (played AFTER the explosion)
+   congrats → level success
+   single   → 1 line cleared
+   nople    → bad placement (piece lands leaving a gap beneath it) */
+
+/* fallback only: device speech synthesis "Amazing!" (used if the mp3 fails to load) */
+function sayAmazingFallback(delayMs){
   if(A.muted)return;
   setTimeout(()=>{
     try{
@@ -660,8 +666,12 @@ function sayAmazing(delayMs=800){
 /* ══════════ SAMPLES (Cloudinary) ══════════ */
 const Bufs={};
 const SFX_URLS={
-  move:'https://res.cloudinary.com/sogbouii/video/upload/v1788837789/WUT_WUT_WUT.wav',
-  rot :'https://res.cloudinary.com/sogbouii/video/upload/v1788837869/Energy_Impulse_02.wav'
+  move    :'https://res.cloudinary.com/sogbouii/video/upload/v1788837789/WUT_WUT_WUT.wav',
+  rot     :'https://res.cloudinary.com/sogbouii/video/upload/v1788837869/Energy_Impulse_02.wav',
+  amazing :'https://res.cloudinary.com/sogbouii/video/upload/v1788965434/amazing-Pecah_2_baris_ke_atas.mp3',
+  congrats:'https://res.cloudinary.com/sogbouii/video/upload/v1788965435/congratulations-Level_success.mp3',
+  single  :'https://res.cloudinary.com/sogbouii/video/upload/v1788965435/ow-penempatan_tida_pas.mp3',
+  nople   :'https://res.cloudinary.com/sogbouii/video/upload/v1788965436/no-way-Pecah_1_baris.mp3'
 };
 async function fetchBuf(url){
   const r=await fetch(url); if(!r.ok)throw new Error('http '+r.status);
@@ -712,11 +722,27 @@ const S={
   lock(){A.tone(150,.06,'triangle',.3); A.noise(.05,.12,'lowpass',1000)},
   hard(){A.drop(); vib(45)},
   hold(){A.tone(500,.08,'square',.06,300); A.tone(760,.07,'square',.05,460,.05); vib(10)},
-  clear(n){A.explode(n); vib(n>=4?[60,35,60,35,100]:[40,25,45])},
+  clear(n){
+    A.explode(n);
+    vib(n>=4?[60,35,60,35,100]:[40,25,45]);
+    /* voice reactions — AFTER the explosion */
+    if(n>=2){
+      if(!playBuf('amazing',.95,1,0,.8)) sayAmazingFallback(800);
+    }else{
+      playBuf('single',.9,1,0,.3);
+    }
+  },
   tspin(){A.boom(.55); A.tone(880,.1,'square',.08,1200,.05); A.tone(1245,.12,'square',.07,1600,.12)},
   combo(c){A.tone(500+Math.min(c,10)*90,.07,'square',.07)},
-  level(){[392,523,659,784,1046,1318].forEach((f,i)=>A.tone(f,.14,'square',.09,null,i*.08))},
-  win(){[523,659,784,1046,1318,1568,2093].forEach((f,i)=>A.tone(f,.2,'square',.09,null,i*.11))},
+  level(){
+    [392,523,659,784,1046,1318].forEach((f,i)=>A.tone(f,.14,'square',.09,null,i*.08));
+    playBuf('congrats',.95,1,0,.45);   /* "Congratulations!" on level success */
+  },
+  win(){
+    [523,659,784,1046,1318,1568,2093].forEach((f,i)=>A.tone(f,.2,'square',.09,null,i*.11));
+    playBuf('congrats',.95,1,0,.5);
+  },
+  badPlace(){ playBuf('nople',.85,1,0,.18); },  /* "No way!" on bad placement */
   over(){A.boom(1); A.tone(440,.9,'sawtooth',.14,60,.15); A.tone(330,.9,'sawtooth',.11,50,.3); vib([60,60,120])}
 };
 
@@ -822,7 +848,7 @@ const IDB={
   db:null,
   open(){return new Promise(r=>{
     let req;
-    try{req=indexedDB.open('tetris-king',1);}catch(e){return r(false);}
+    try{req=indexedDB.open('puzzle-king',1);}catch(e){return r(false);}
     req.onupgradeneeded=e=>{try{e.target.result.createObjectStore('kv')}catch(_){}};
     req.onsuccess=e=>{this.db=e.target.result;r(true)};
     req.onerror=()=>r(false);
@@ -860,16 +886,16 @@ function musicStart(){
 function musicStop(){ custom.pause(); CloudMusic.stop(); Music.stop(); }
 
 /* ══════════ LEVEL PROGRESS (persistent) ══════════ */
-let unlockedMax=clamp(+(store.get('tk.unlocked')||1),1,MAX_LEVEL);
-let clearedMax =clamp(+(store.get('tk.cleared') ||0),0,MAX_LEVEL);
+let unlockedMax=clamp(+(store.get('pk.unlocked')||1),1,MAX_LEVEL);
+let clearedMax =clamp(+(store.get('pk.cleared') ||0),0,MAX_LEVEL);
 function saveProgress(){
-  store.set('tk.unlocked',unlockedMax);
-  store.set('tk.cleared',clearedMax);
+  store.set('pk.unlocked',unlockedMax);
+  store.set('pk.cleared',clearedMax);
 }
 
 /* ══════════ GAME STATE ══════════ */
 let board, piece, queue=[], bag=[], holdType=null, holdUsed=false;
-let score=0, lines=0, level=1, best=+(store.get('tk.best')||0);
+let score=0, lines=0, level=1, best=+(store.get('pk.best')||0);
 let combo=-1, b2b=false;
 let gravAcc=0, gravInt=1000, lockT=0, lockResets=0, lastRot=false, spawnWait=0;
 let softOn=false, keys={L:false,R:false};
@@ -990,6 +1016,17 @@ function lock(){
     combo=-1;
     if(ts){const pts=400*level; score+=pts; b2b=true; announce('T-SPIN','+'+pts,null,'red'); S.tspin();}
     else b2b=false;
+    /* ═ BAD PLACEMENT check: piece bridged over an empty gap beneath it ═ */
+    const colLow=new Array(COLS).fill(-1);
+    for(const c of cells){ if(c.y>colLow[c.x])colLow[c.x]=c.y; }
+    let bad=false;
+    for(let x=0;x<COLS&&!bad;x++){
+      if(colLow[x]<0)continue;
+      for(let y=colLow[x]+1;y<ROWS;y++){
+        if(!board[y][x]){bad=true;break;}
+      }
+    }
+    if(bad)S.badPlace();
     updateHud(); spawnNext();
   }
 }
@@ -1007,12 +1044,10 @@ function clearLines(rows,ts){
   rows.forEach(r=>explodeRow(r,n));
   rows.forEach(r=>fxList.push({k:'rowflash',y:r-BUF,t:0,dur:260}));
   shake(n===4?16:8+n);
-  S.clear(n);
+  S.clear(n);           /* explosion + voice reaction ("Amazing!" for 2+, "Ow" for 1) */
   if(ts)S.tspin();
   announce(name,'+'+pts, combo>0?'COMBO ×'+combo:null, cls);
   if(combo>0)S.combo(combo);
-  /* female voice "AMAZING!" — AFTER the explosion (0.8s), for 2+ line clears */
-  if(n>=2)sayAmazing(800);
 
   const keep=board.filter((_,i)=>!rows.includes(i));
   while(keep.length<ROWS)keep.unshift(Array(COLS).fill(null));
@@ -1033,7 +1068,7 @@ function levelComplete(){
   document.body.classList.remove('playing');
   musicStop();
   if(clearedMax<level){clearedMax=level; saveProgress();}
-  if(score>best){best=score; store.set('tk.best',best);}
+  if(score>best){best=score; store.set('pk.best',best);}
   updateHud();
 
   if(level>=MAX_LEVEL){
@@ -1043,7 +1078,7 @@ function levelComplete(){
     return;
   }
   if(unlockedMax<level+1){unlockedMax=level+1; saveProgress();}
-  S.level();
+  S.level();   /* fanfare + "Congratulations!" */
   $('#clearNum').textContent=level;
   $('#nextNum').textContent=level+1;
   $('#clearScore').textContent=pad6(score);
@@ -1319,7 +1354,7 @@ function gameOver(){
     state='over'; musicStop(); S.over(); shake(16); explodeBoard();
     document.body.classList.remove('playing');
     layout();
-    if(score>best){best=score; store.set('tk.best',best); $('#recBadge').classList.remove('hidden');}
+    if(score>best){best=score; store.set('pk.best',best); $('#recBadge').classList.remove('hidden');}
     else $('#recBadge').classList.add('hidden');
     $('#finalScore').textContent=pad6(score);
     $('#finalBest').textContent=pad6(best);
@@ -1519,4 +1554,4 @@ if('serviceWorker' in navigator){
 }
 </script>
 </body>
-  </html>
+          </html>
