@@ -1,7 +1,4 @@
-/* Puzzle King — Service Worker (GitHub Pages / PWA)
-   Cache-first: app shell + ikon + font + audio Cloudinary.
-   Bump VERSION on every update so clients fetch the new build. */
-const VERSION = 'puzzle-king-v5';
+const VERSION = 'puzzle-king-v6';
 const CACHE = 'pk-' + VERSION;
 
 const SHELL = [
