@@ -1,7 +1,7 @@
 {
-  "name": "The Tetris King",
-  "short_name": "Tetris King",
-  "description": "A modern arcade Tetris with 20 unlockable levels, bomb sound effects, fireworks, and a female voice shouting AMAZING after big clears.",
+  "name": "Puzzle King",
+  "short_name": "Puzzle King",
+  "description": "Puzzle King — a modern arcade block puzzle with 20 unlockable levels, bomb sound effects, voice reactions, fireworks and smoke.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
