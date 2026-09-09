@@ -1,5 +1,8 @@
-const VERSION = 'tetris-king-v4';
-const CACHE = 'tk-' + VERSION;
+/* Puzzle King — Service Worker (GitHub Pages / PWA)
+   Cache-first: app shell + ikon + font + audio Cloudinary.
+   Bump VERSION on every update so clients fetch the new build. */
+const VERSION = 'puzzle-king-v5';
+const CACHE = 'pk-' + VERSION;
 
 const SHELL = [
   './',
@@ -15,13 +18,17 @@ const RUNTIME_AUDIO = [
   'https://res.cloudinary.com/sogbouii/video/upload/v1788837529/Block_Drop_Bounce.mp3',
   'https://res.cloudinary.com/sogbouii/video/upload/v1788837529/Block_Drop_Bounce_1.mp3',
   'https://res.cloudinary.com/sogbouii/video/upload/v1788837789/WUT_WUT_WUT.wav',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1788837869/Energy_Impulse_02.wav'
+  'https://res.cloudinary.com/sogbouii/video/upload/v1788837869/Energy_Impulse_02.wav',
+  'https://res.cloudinary.com/sogbouii/video/upload/v1788965434/amazing-Pecah_2_baris_ke_atas.mp3',
+  'https://res.cloudinary.com/sogbouii/video/upload/v1788965435/congratulations-Level_success.mp3',
+  'https://res.cloudinary.com/sogbouii/video/upload/v1788965435/ow-penempatan_tida_pas.mp3',
+  'https://res.cloudinary.com/sogbouii/video/upload/v1788965436/no-way-Pecah_1_baris.mp3'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    // precache satu per satu — satu gagal tidak menggagalkan install
+    // precache one by one — a single failure doesn't break the install
     await Promise.all(SHELL.map(async (u) => {
       try { await cache.add(new Request(u, { cache: 'reload' })); } catch (err) {}
     }));
@@ -47,7 +54,7 @@ self.addEventListener('fetch', (e) => {
   let url;
   try { url = new URL(req.url); } catch (err) { return; }
 
-  // Navigasi halaman: cache-first, fallback ke index.html saat offline
+  // Page navigation: network-first, fallback to cached index.html offline
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       const cached = await caches.match('./index.html');
@@ -65,7 +72,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Cross-origin: hanya audio Cloudinary + font yang di-cache
+  // Cross-origin: only cache Cloudinary audio + Google Fonts
   const sameOrigin = url.origin === self.location.origin;
   const isCloudinary = /(^|\.)cloudinary\.com$/.test(url.hostname);
   const isFonts = /(^|\.)(googleapis|gstatic)\.com$/.test(url.hostname);
