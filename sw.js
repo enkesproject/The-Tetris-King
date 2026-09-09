@@ -1,4 +1,4 @@
-const VERSION = 'puzzle-king-v3';
+const VERSION = 'puzzle-king-v4';
 const CACHE = 'pk-' + VERSION;
 
 const SHELL = [
